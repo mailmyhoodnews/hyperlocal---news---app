@@ -61,7 +61,7 @@ if choice == "Sign Up":
                 "Pin": "",
                 "Area": ""
             }
-            users = users.append(new_user, ignore_index=True)
+            users = pd.concat([users, pd.DataFrame([new_user])], ignore_index=True)
             save_users(users)
             st.success("Account created successfully! Please login.")
 
@@ -117,7 +117,7 @@ elif choice == "Login":
                             "Area": user_area,
                             "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         }
-                        posts = posts.append(new_post, ignore_index=True)
+                        posts = pd.concat([posts, pd.DataFrame([new_post])], ignore_index=True)
                         save_posts(posts)
                         st.success("Post added successfully!")
             else:
