@@ -120,11 +120,16 @@ if st.session_state.logged_in and st.session_state.current_user:
             location_posts = posts[(posts["Pin"] == pin) & (posts["Area"] == area)]
             if location_posts.empty:
                 sample_posts = pd.DataFrame([
-                    {"Author": "PoliceDept", "Content": "Traffic update: Diversion near " + area, "Image": "", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-                    {"Author": "BMC", "Content": "Water supply maintenance scheduled today in " + area, "Image": "", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-                    {"Author": "Resident", "Content": "Saw a stray dog near the market, please be careful", "Image": "", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-                    {"Author": "LocalShop", "Content": "Free health camp at community center tomorrow", "Image": "", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-                    {"Author": "School", "Content": "School bus delayed due to traffic on main road", "Image": "", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+                    {"Author": "PoliceDept", "Content": "Traffic update: Diversion near " + area,
+                     "Image": "https://images.unsplash.com/photo-1506521781263-d8422e82f27a", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+                    {"Author": "BMC", "Content": "Water supply maintenance scheduled today in " + area,
+                     "Image": "https://images.unsplash.com/photo-1565374395542-0ce13e8f87df", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+                    {"Author": "Resident", "Content": "Saw a stray dog near the market, please be careful",
+                     "Image": "https://images.unsplash.com/photo-1517849845537-4d257902454a", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+                    {"Author": "LocalShop", "Content": "Free health camp at community center tomorrow",
+                     "Image": "https://images.unsplash.com/photo-1588776814546-1ffcf47267d0", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+                    {"Author": "School", "Content": "School bus delayed due to traffic on main road",
+                     "Image": "https://images.unsplash.com/photo-1581091870634-4f0c4d71a86c", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
                 ])
                 posts = pd.concat([posts, sample_posts], ignore_index=True)
                 save_posts(posts)
@@ -146,7 +151,7 @@ if st.session_state.logged_in and st.session_state.current_user:
                 st.write(row["Content"])
                 if row["Image"] and str(row["Image"]).strip() != "":
                     try:
-                        st.image(row["Image"], width=250)
+                        st.image(row["Image"], width=400)
                     except:
                         st.write("(Image not available)")
                 st.markdown("---")
