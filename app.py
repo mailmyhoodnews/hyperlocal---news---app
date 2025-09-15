@@ -85,7 +85,7 @@ if not st.session_state.logged_in:
                 if check_password(password, user["Password"]):
                     st.session_state.logged_in = True
                     st.session_state.current_user = email
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.error("Invalid password!")
             else:
@@ -111,14 +111,12 @@ if st.session_state.logged_in and st.session_state.current_user:
             area = st.selectbox("Area", ["Powai", "Filter Pada", "Murarji Nagar"])
 
         if st.button("Save Profile"):
-            users.loc[users["Email"] == user["Email"], ["Public Name", "Country", "State", "District", "Pin", "Area"]] = \
-                [public_name, country, state, district, pin, area]
+            users.loc[users["Email"] == user["Email"], ["Public Name", "Country", "State", "District", "Pin", "Area"]] =                 [public_name, country, state, district, pin, area]
             save_users(users)
             st.session_state.logged_in = True
             st.session_state.current_user = user["Email"]
 
             # Add sample posts for this user's selected location if none exist for that location
-            # We'll add several posts whose Pin and Area exactly match the selected values
             location_posts = posts[(posts["Pin"] == pin) & (posts["Area"] == area)]
             if location_posts.empty:
                 sample_posts = pd.DataFrame([
@@ -132,7 +130,7 @@ if st.session_state.logged_in and st.session_state.current_user:
                 save_posts(posts)
 
             st.success("✅ Profile setup completed. Redirecting to Home Feed...")
-            st.experimental_rerun()
+            st.rerun()
 
     else:
         # ---------- Home Feed ----------
@@ -172,4 +170,4 @@ if st.session_state.logged_in and st.session_state.current_user:
         if st.button("Logout"):
             st.session_state.logged_in = False
             st.session_state.current_user = None
-            st.experimental_rerun()
+            st.rerun()
