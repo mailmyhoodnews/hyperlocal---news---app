@@ -1,181 +1,111 @@
+
 import streamlit as st
 import pandas as pd
-import hashlib
 from datetime import datetime
 
-# ---------- Helper Functions ----------
-def make_hash(password):
-    return hashlib.sha256(str(password).encode()).hexdigest()
+# Initialize session state
+if "users" not in st.session_state:
+    st.session_state.users = pd.DataFrame(columns=[
+        "Full Name", "Email", "Phone", "Password",
+        "Public Name", "Country", "State", "District", "Pin Code", "Area"
+    ])
 
-def check_password(password, hashed):
-    return make_hash(password) == hashed
+if "logged_in_user" not in st.session_state:
+    st.session_state.logged_in_user = None
 
-def load_users():
-    try:
-        return pd.read_csv("users.csv")
-    except:
-        return pd.DataFrame(columns=[
-            "Email", "Password", "Full Name", "Phone", "Public Name",
-            "Country", "State", "District", "Pin", "Area"
-        ])
+# Sample posts with images
+def get_sample_posts(user_location):
+    posts = [
+        {
+            "Author": "PoliceDept",
+            "Content": "A major road accident took place early this morning in Powai near Murarji Nagar. According to eyewitnesses, a speeding truck lost control and rammed into several vehicles, causing a massive pile-up on the highway. Fire brigade and local police immediately reached the spot to control the situation and provide medical assistance. Several people sustained injuries and traffic movement was severely disrupted for hours. Authorities have urged residents to avoid this route until clearance work i...
+            "Image": "images/accident.png",
+            "Location": "Powai, Murarji Nagar",
+            "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        },
+        {
+            "Author": "TrafficDept",
+            "Content": "Heavy traffic congestion has been reported near Sakinaka in the Jari Mari area due to ongoing repair works and continuous rainfall. The narrow lanes, combined with double-parked vehicles, made movement extremely difficult for commuters during peak hours. Public transport, including buses and rickshaws, was affected, leading to delays in office travel. Authorities have deployed traffic police to manage the situation, but commuters are advised to take alternative routes until the situation improv...
+            "Image": "images/traffic.png",
+            "Location": "Sakinaka, Jari Mari",
+            "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        },
+        {
+            "Author": "BMC",
+            "Content": "A fire broke out this afternoon in a residential tower located in Filter Pada, Powai. Thick black smoke was seen billowing from the upper floors, causing panic among residents. Fire tenders rushed to the spot and immediately began evacuation efforts. Fortunately, no casualties have been reported so far, though several people were treated for smoke inhalation. The cause of the fire is still under investigation, but initial reports suggest an electrical short circuit. Residents are urged to remain a...
+            "Image": "images/fire.png",
+            "Location": "Powai, Filter Pada",
+            "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        },
+        {
+            "Author": "CommunityGroup",
+            "Content": "In a positive development, residents of Jari Mari organized a community cleanliness and safety drive in collaboration with local NGOs and civic bodies. The initiative saw over 200 volunteers coming together to clean streets, remove garbage, and set up awareness camps on sanitation and waste management. Local leaders highlighted the importance of maintaining hygiene and safety in densely populated areas. The event concluded with a pledge by residents to continue such efforts regularly to make Jari Ma...
+            "Image": None,
+            "Location": "Jari Mari",
+            "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    ]
+    return [p for p in posts if user_location in p["Location"]]
 
-def load_posts():
-    try:
-        return pd.read_csv("posts.csv")
-    except:
-        return pd.DataFrame(columns=["Author", "Content", "Image", "Pin", "Area", "Timestamp"])
+# Login form
+def login():
+    st.header("🔑 Login to Your Account")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        user = st.session_state.users[
+            (st.session_state.users["Email"] == email) &
+            (st.session_state.users["Password"] == password)
+        ]
+        if not user.empty:
+            st.session_state.logged_in_user = user.iloc[0].to_dict()
+            st.success(f"Welcome {st.session_state.logged_in_user['Public Name']}!")
+            st.experimental_rerun()
+        else:
+            st.error("Invalid login credentials")
 
-def save_users(df):
-    df.to_csv("users.csv", index=False)
+# Public profile setup
+def profile_setup():
+    st.warning("Complete your public profile setup first.")
+    public_name = st.text_input("Public Display Name")
+    country = st.selectbox("Country", ["India"])
+    state = st.selectbox("State", ["Maharashtra"])
+    district = st.selectbox("District", ["Mumbai Suburban"])
+    pin_code = st.selectbox("Pin Code", ["400072", "400087"])
+    area = st.selectbox("Area", ["Jari Mari", "Safed Pool"] if pin_code == "400072" else ["Powai", "Filter Pada", "Murarji Nagar"])
+    if st.button("Save Profile"):
+        st.session_state.logged_in_user.update({
+            "Public Name": public_name,
+            "Country": country,
+            "State": state,
+            "District": district,
+            "Pin Code": pin_code,
+            "Area": area
+        })
+        st.success("Profile updated successfully! Redirecting to Home Feed...")
+        st.experimental_rerun()
 
-def save_posts(df):
-    df.to_csv("posts.csv", index=False)
+# Home feed
+def home_feed():
+    st.header("📰 Home Feed")
+    user_location = f"{st.session_state.logged_in_user['Area']}"
+    posts = get_sample_posts(user_location)
+    for row in posts:
+        st.subheader(f"{row['Author']} ({row['Timestamp']})")
+        st.write(row["Content"])
+        if row["Image"]:
+            st.image(row["Image"], width=400)
+        else:
+            st.info("(No image attached)")
+        st.markdown("---")
 
-# ---------- Streamlit Page Config ----------
-st.set_page_config(page_title="Hyperlocal News App", layout="wide")
+# Main app logic
 st.title("📰 Hyperlocal News & Safety App")
 
-# ---------- Session State Initialization ----------
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "current_user" not in st.session_state:
-    st.session_state.current_user = None
-
-users = load_users()
-posts = load_posts()
-
-# ---------- Authentication Flow ----------
-if not st.session_state.logged_in:
-    menu = ["Login", "Sign Up"]
-    choice = st.sidebar.selectbox("Menu", menu)
-
-    if choice == "Sign Up":
-        st.subheader("Create New Account")
-        full_name = st.text_input("Full Name")
-        phone = st.text_input("Phone Number")
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        if st.button("Sign Up"):
-            if email in users["Email"].values:
-                st.error("Email already registered!")
-            else:
-                new_user = {
-                    "Email": email,
-                    "Password": make_hash(password),
-                    "Full Name": full_name,
-                    "Phone": phone,
-                    "Public Name": "",
-                    "Country": "",
-                    "State": "",
-                    "District": "",
-                    "Pin": "",
-                    "Area": ""
-                }
-                users = pd.concat([users, pd.DataFrame([new_user])], ignore_index=True)
-                save_users(users)
-                st.success("Account created successfully! Please login.")
-
-    elif choice == "Login":
-        st.subheader("Login to Your Account")
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        if st.button("Login"):
-            if email in users["Email"].values:
-                user = users.loc[users["Email"] == email].iloc[0]
-                if check_password(password, user["Password"]):
-                    st.session_state.logged_in = True
-                    st.session_state.current_user = email
-                    st.rerun()
-                else:
-                    st.error("Invalid password!")
-            else:
-                st.error("User not found!")
-
-# ---------- After Login Flow ----------
-if st.session_state.logged_in and st.session_state.current_user:
-    users = load_users()  # reload to get latest updates
-    posts = load_posts()
-    user = users.loc[users["Email"] == st.session_state.current_user].iloc[0]
-
-    # Profile Setup if not completed
-    if pd.isna(user["Public Name"]) or user["Public Name"] == "":
-        st.warning("Complete your public profile setup first.")
-        public_name = st.text_input("Public Display Name")
-        country = st.selectbox("Country", ["India"])
-        state = st.selectbox("State", ["Maharashtra"])
-        district = st.selectbox("District", ["Mumbai Suburban"])
-        pin = st.selectbox("Pin Code", ["400072", "400087"])
-        if pin == "400072":
-            area = st.selectbox("Area", ["Jari Mari", "Safed Pool"])
-        else:
-            area = st.selectbox("Area", ["Powai", "Filter Pada", "Murarji Nagar"])
-
-        if st.button("Save Profile"):
-            users.loc[users["Email"] == user["Email"], ["Public Name", "Country", "State", "District", "Pin", "Area"]] =                 [public_name, country, state, district, pin, area]
-            save_users(users)
-            st.session_state.logged_in = True
-            st.session_state.current_user = user["Email"]
-
-            # Add sample posts for this user's selected location if none exist for that location
-            location_posts = posts[(posts["Pin"] == pin) & (posts["Area"] == area)]
-            if location_posts.empty:
-                sample_posts = pd.DataFrame([
-                    {"Author": "PoliceDept", "Content": "Traffic update: Diversion near " + area,
-                     "Image": "https://images.unsplash.com/photo-1506521781263-d8422e82f27a", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-                    {"Author": "BMC", "Content": "Water supply maintenance scheduled today in " + area,
-                     "Image": "https://images.unsplash.com/photo-1565374395542-0ce13e8f87df", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-                    {"Author": "Resident", "Content": "Saw a stray dog near the market, please be careful",
-                     "Image": "https://images.unsplash.com/photo-1517849845537-4d257902454a", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-                    {"Author": "LocalShop", "Content": "Free health camp at community center tomorrow",
-                     "Image": "https://images.unsplash.com/photo-1588776814546-1ffcf47267d0", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-                    {"Author": "School", "Content": "School bus delayed due to traffic on main road",
-                     "Image": "https://images.unsplash.com/photo-1581091870634-4f0c4d71a86c", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
-                ])
-                posts = pd.concat([posts, sample_posts], ignore_index=True)
-                save_posts(posts)
-
-            st.success("✅ Profile setup completed. Redirecting to Home Feed...")
-            st.rerun()
-
+if not st.session_state.logged_in_user:
+    login()
+else:
+    if not st.session_state.logged_in_user.get("Public Name"):
+        profile_setup()
     else:
-        # ---------- Home Feed ----------
-        st.subheader("🏠 Home Feed")
-        user_pin = user["Pin"]
-        user_area = user["Area"]
-        filtered_posts = posts[(posts["Pin"] == user_pin) & (posts["Area"] == user_area)]
-        if filtered_posts.empty:
-            st.info("No posts yet in your area.")
-        else:
-            for _, row in filtered_posts.iterrows():
-                st.markdown(f"**{row['Author']}** ({row['Timestamp']})")
-                st.write(row["Content"])
-                if row["Image"] and str(row["Image"]).strip() != "":
-                    try:
-                        st.image(row["Image"], width=400)
-                    except:
-                        st.write("(Image not available)")
-                st.markdown("---")
-
-        # ---------- Add New Post ----------
-        st.subheader("✍️ Add New Post")
-        content = st.text_area("Post Content")
-        image_url = st.text_input("Image URL (optional)")
-        tags = st.text_input("Tags (optional)")
-        if st.button("Post"):
-            new_post = {
-                "Author": user["Public Name"],
-                "Content": content,
-                "Image": image_url,
-                "Pin": user_pin,
-                "Area": user_area,
-                "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            posts = pd.concat([posts, pd.DataFrame([new_post])], ignore_index=True)
-            save_posts(posts)
-            st.success("Post added successfully!")
-
-        # ---------- Logout Button ----------
-        if st.button("Logout"):
-            st.session_state.logged_in = False
-            st.session_state.current_user = None
-            st.rerun()
+        home_feed()
