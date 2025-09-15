@@ -13,7 +13,7 @@ if "users" not in st.session_state:
 if "logged_in_user" not in st.session_state:
     st.session_state.logged_in_user = None
 
-# Sample posts with images
+# ------------------ SAMPLE POSTS ------------------
 def get_sample_posts(user_location):
     posts = [
         {
@@ -67,7 +67,39 @@ def get_sample_posts(user_location):
     ]
     return [p for p in posts if user_location in p["Location"]]
 
-# Login form
+# ------------------ SIGN UP FORM ------------------
+def signup():
+    st.header("📝 Sign Up")
+    full_name = st.text_input("Full Name")
+    phone = st.text_input("Phone Number")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Sign Up"):
+        if email in st.session_state.users["Email"].values:
+            st.error("User already exists! Please login.")
+        else:
+            new_user = {
+                "Full Name": full_name,
+                "Email": email,
+                "Phone": phone,
+                "Password": password,
+                "Public Name": "",
+                "Country": "",
+                "State": "",
+                "District": "",
+                "Pin Code": "",
+                "Area": ""
+            }
+            st.session_state.users = pd.concat(
+                [st.session_state.users, pd.DataFrame([new_user])],
+                ignore_index=True
+            )
+            st.session_state.logged_in_user = new_user
+            st.success("Account created! Please complete your profile setup.")
+            st.experimental_rerun()
+
+# ------------------ LOGIN FORM ------------------
 def login():
     st.header("🔑 Login to Your Account")
     email = st.text_input("Email")
@@ -79,12 +111,12 @@ def login():
         ]
         if not user.empty:
             st.session_state.logged_in_user = user.iloc[0].to_dict()
-            st.success(f"Welcome {st.session_state.logged_in_user['Public Name']}!")
+            st.success(f"Welcome {st.session_state.logged_in_user['Full Name']}!")
             st.experimental_rerun()
         else:
             st.error("Invalid login credentials")
 
-# Public profile setup
+# ------------------ PROFILE SETUP ------------------
 def profile_setup():
     st.warning("Complete your public profile setup first.")
     public_name = st.text_input("Public Display Name")
@@ -93,6 +125,7 @@ def profile_setup():
     district = st.selectbox("District", ["Mumbai Suburban"])
     pin_code = st.selectbox("Pin Code", ["400072", "400087"])
     area = st.selectbox("Area", ["Jari Mari", "Safed Pool"] if pin_code == "400072" else ["Powai", "Filter Pada", "Murarji Nagar"])
+
     if st.button("Save Profile"):
         st.session_state.logged_in_user.update({
             "Public Name": public_name,
@@ -102,28 +135,38 @@ def profile_setup():
             "Pin Code": pin_code,
             "Area": area
         })
+        # Update dataframe too
+        idx = st.session_state.users[st.session_state.users["Email"] == st.session_state.logged_in_user["Email"]].index[0]
+        st.session_state.users.loc[idx] = st.session_state.logged_in_user
         st.success("Profile updated successfully! Redirecting to Home Feed...")
         st.experimental_rerun()
 
-# Home feed
+# ------------------ HOME FEED ------------------
 def home_feed():
     st.header("📰 Home Feed")
     user_location = f"{st.session_state.logged_in_user['Area']}"
     posts = get_sample_posts(user_location)
-    for row in posts:
-        st.subheader(f"{row['Author']} ({row['Timestamp']})")
-        st.write(row["Content"])
-        if row["Image"]:
-            st.image(row["Image"], width=400)
-        else:
-            st.info("(No image attached)")
-        st.markdown("---")
+    if posts:
+        for row in posts:
+            st.subheader(f"{row['Author']} ({row['Timestamp']})")
+            st.write(row["Content"])
+            if row["Image"]:
+                st.image(row["Image"], width=400)
+            else:
+                st.info("(No image attached)")
+            st.markdown("---")
+    else:
+        st.info("No posts available for your area yet.")
 
-# Main app logic
+# ------------------ MAIN APP ------------------
 st.title("📰 Hyperlocal News & Safety App")
 
 if not st.session_state.logged_in_user:
-    login()
+    menu = st.sidebar.selectbox("Menu", ["Login", "Sign Up"])
+    if menu == "Login":
+        login()
+    else:
+        signup()
 else:
     if not st.session_state.logged_in_user.get("Public Name"):
         profile_setup()
