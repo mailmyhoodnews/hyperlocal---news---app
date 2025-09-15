@@ -144,8 +144,11 @@ if st.session_state.logged_in and st.session_state.current_user:
             for _, row in filtered_posts.iterrows():
                 st.markdown(f"**{row['Author']}** ({row['Timestamp']})")
                 st.write(row["Content"])
-                if row["Image"]:
-                    st.image(row["Image"], width=250)
+                if row["Image"] and str(row["Image"]).strip() != "":
+                    try:
+                        st.image(row["Image"], width=250)
+                    except:
+                        st.write("(Image not available)")
                 st.markdown("---")
 
         # ---------- Add New Post ----------
