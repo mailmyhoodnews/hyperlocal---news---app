@@ -18,28 +18,48 @@ def get_sample_posts(user_location):
     posts = [
         {
             "Author": "PoliceDept",
-            "Content": "A major road accident took place early this morning in Powai near Murarji Nagar. According to eyewitnesses, a speeding truck lost control and rammed into several vehicles, causing a massive pile-up on the highway. Fire brigade and local police immediately reached the spot to control the situation and provide medical assistance. Several people sustained injuries and traffic movement was severely disrupted for hours. Authorities have urged residents to avoid this route until clearance work i...
+            "Content": """A major road accident took place early this morning in Powai near Murarji Nagar. 
+            According to eyewitnesses, a speeding truck lost control and rammed into several vehicles, 
+            causing a massive pile-up on the highway. Fire brigade and local police immediately reached 
+            the spot to control the situation and provide medical assistance. Several people sustained 
+            injuries and traffic movement was severely disrupted for hours. Authorities have urged residents 
+            to avoid this route until clearance work is completed.""",
             "Image": "images/accident.png",
             "Location": "Powai, Murarji Nagar",
             "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         },
         {
             "Author": "TrafficDept",
-            "Content": "Heavy traffic congestion has been reported near Sakinaka in the Jari Mari area due to ongoing repair works and continuous rainfall. The narrow lanes, combined with double-parked vehicles, made movement extremely difficult for commuters during peak hours. Public transport, including buses and rickshaws, was affected, leading to delays in office travel. Authorities have deployed traffic police to manage the situation, but commuters are advised to take alternative routes until the situation improv...
+            "Content": """Heavy traffic congestion has been reported near Sakinaka in the Jari Mari area 
+            due to ongoing repair works and continuous rainfall. The narrow lanes, combined with double-parked 
+            vehicles, made movement extremely difficult for commuters during peak hours. Public transport, 
+            including buses and rickshaws, was affected, leading to delays in office travel. Authorities have 
+            deployed traffic police to manage the situation, but commuters are advised to take alternative 
+            routes until the situation improves.""",
             "Image": "images/traffic.png",
             "Location": "Sakinaka, Jari Mari",
             "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         },
         {
             "Author": "BMC",
-            "Content": "A fire broke out this afternoon in a residential tower located in Filter Pada, Powai. Thick black smoke was seen billowing from the upper floors, causing panic among residents. Fire tenders rushed to the spot and immediately began evacuation efforts. Fortunately, no casualties have been reported so far, though several people were treated for smoke inhalation. The cause of the fire is still under investigation, but initial reports suggest an electrical short circuit. Residents are urged to remain a...
+            "Content": """A fire broke out this afternoon in a residential tower located in Filter Pada, Powai. 
+            Thick black smoke was seen billowing from the upper floors, causing panic among residents. 
+            Fire tenders rushed to the spot and immediately began evacuation efforts. Fortunately, no casualties 
+            have been reported so far, though several people were treated for smoke inhalation. The cause of the fire 
+            is still under investigation, but initial reports suggest an electrical short circuit. Residents are urged 
+            to remain alert and cooperate with the emergency response teams.""",
             "Image": "images/fire.png",
             "Location": "Powai, Filter Pada",
             "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         },
         {
             "Author": "CommunityGroup",
-            "Content": "In a positive development, residents of Jari Mari organized a community cleanliness and safety drive in collaboration with local NGOs and civic bodies. The initiative saw over 200 volunteers coming together to clean streets, remove garbage, and set up awareness camps on sanitation and waste management. Local leaders highlighted the importance of maintaining hygiene and safety in densely populated areas. The event concluded with a pledge by residents to continue such efforts regularly to make Jari Ma...
+            "Content": """In a positive development, residents of Jari Mari organized a community cleanliness and 
+            safety drive in collaboration with local NGOs and civic bodies. The initiative saw over 200 volunteers 
+            coming together to clean streets, remove garbage, and set up awareness camps on sanitation and waste 
+            management. Local leaders highlighted the importance of maintaining hygiene and safety in densely 
+            populated areas. The event concluded with a pledge by residents to continue such efforts regularly 
+            to make Jari Mari a safer and healthier neighborhood.""",
             "Image": None,
             "Location": "Jari Mari",
             "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
