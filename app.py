@@ -75,7 +75,6 @@ elif choice == "Login":
             if check_password(password, user["Password"]):
                 st.success(f"Welcome {user['Full Name']}!")
 
-                # ✅ FIXED condition for Public Profile Setup
                 if pd.isna(user["Public Name"]) or user["Public Name"] == "":
                     st.warning("Complete your public profile setup first.")
                     public_name = st.text_input("Public Display Name")
@@ -91,8 +90,46 @@ elif choice == "Login":
                     if st.button("Save Profile"):
                         users.loc[users["Email"] == email, ["Public Name", "Country", "State", "District", "Pin", "Area"]] =                             [public_name, country, state, district, pin, area]
                         save_users(users)
-                        st.success("Profile setup completed. Please login again.")
-                        st.stop()
+
+                        st.success("✅ Profile setup completed. Redirecting to Home Feed...")
+
+                        # Add sample posts if none exist
+                        if posts.empty:
+                            sample_posts = pd.DataFrame([
+                                {"Author": "PoliceDept", "Content": "Traffic update: Diversion near Jari Mari", "Image": "", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+                                {"Author": "BMC", "Content": "Water supply maintenance today in Safed Pool", "Image": "", "Pin": pin, "Area": area, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+                            ])
+                            posts = pd.concat([posts, sample_posts], ignore_index=True)
+                            save_posts(posts)
+
+                        # Show Home Feed immediately
+                        st.subheader("🏠 Home Feed")
+                        user_pin = pin
+                        user_area = area
+                        filtered_posts = posts[(posts["Pin"] == user_pin) & (posts["Area"] == user_area)]
+                        for _, row in filtered_posts.iterrows():
+                            st.markdown(f"**{row['Author']}** ({row['Timestamp']})")
+                            st.write(row["Content"])
+                            if row["Image"]:
+                                st.image(row["Image"], width=250)
+                            st.markdown("---")
+
+                        st.subheader("✍️ Add New Post")
+                        content = st.text_area("Post Content")
+                        image_url = st.text_input("Image URL (optional)")
+                        tags = st.text_input("Tags (optional)")
+                        if st.button("Post"):
+                            new_post = {
+                                "Author": public_name,
+                                "Content": content,
+                                "Image": image_url,
+                                "Pin": user_pin,
+                                "Area": user_area,
+                                "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            }
+                            posts = pd.concat([posts, pd.DataFrame([new_post])], ignore_index=True)
+                            save_posts(posts)
+                            st.success("Post added successfully!")
                 else:
                     st.subheader("🏠 Home Feed")
                     user_pin = user["Pin"]
