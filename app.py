@@ -75,7 +75,8 @@ elif choice == "Login":
             if check_password(password, user["Password"]):
                 st.success(f"Welcome {user['Full Name']}!")
 
-                if user["Public Name"] == "":
+                # ✅ FIXED condition for Public Profile Setup
+                if pd.isna(user["Public Name"]) or user["Public Name"] == "":
                     st.warning("Complete your public profile setup first.")
                     public_name = st.text_input("Public Display Name")
                     country = st.selectbox("Country", ["India"])
